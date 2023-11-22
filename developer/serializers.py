@@ -14,6 +14,7 @@ class SkillSerializer(serializers.ModelSerializer):
 
 class DevProfileSerializer(serializers.ModelSerializer):
     profile_picture = serializers.ImageField()
+    
     class Meta:
         model = Developer
         fields = ['user','profile_picture','headline','description','gender','date_of_birth',

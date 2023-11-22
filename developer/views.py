@@ -111,7 +111,7 @@ class DevProjectProposalView(APIView):
                 attachments = attachments_file,
                 is_apply = True,
             )
-            
+                
             return Response(ProjectProposalSerializer(t).data, status=status.HTTP_201_CREATED)
 
         return Response({"errors": "There is an error"}, status=status.HTTP_400_BAD_REQUEST)

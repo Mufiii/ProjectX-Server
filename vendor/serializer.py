@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import *
 from accounts.models import User
-from developer.serializers import SkillSerializer
+from developer.serializers import SkillSerializer,DevProfileSerializer
 from datetime import datetime
 from django.utils import timezone
 
@@ -45,17 +45,18 @@ class VendorSerializer(serializers.ModelSerializer):
 
 class ProjectSerializer(serializers.ModelSerializer):
     skills = serializers.PrimaryKeyRelatedField(many=True, queryset=Skill.objects.all())
-
+    # skills = SkillSerializer(many=True)
+    applicants = DevProfileSerializer(many=True)
     class Meta:
         model = Project
-        fields = '__all__'   
-        
+        fields = ['skills','applicants']
+    
+    # validate date   
     def validate_end_date(self,value):
         today = datetime.now().date()
         if value < today:
             raise serializers.ValidationError("End Date cannot be in the past.")
         return value
-    
 
 class ProjectProposalSerializer(serializers.ModelSerializer):
     
@@ -66,4 +67,23 @@ class ProjectProposalSerializer(serializers.ModelSerializer):
             'developer': {'required': False},
             'project': {'required': False},
         }
-        depth = 1
+        
+class DevSerializer(serializers.ModelSerializer):
+    skills = SkillSerializer(many=True)
+    class Meta:
+        model = Developer
+        fields = ('user','skills',)
+        
+        
+        
+class ApplicationsFilterSerializer(serializers.ModelSerializer):
+    skills = SkillSerializer(many=True)
+    applicants = DevSerializer(many=True)
+    
+    class Meta:
+        model = Project
+        fields = [
+            'title',
+            'skills',
+            'applicants',
+        ]

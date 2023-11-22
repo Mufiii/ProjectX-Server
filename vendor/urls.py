@@ -22,4 +22,9 @@ urlpatterns = [
          name="applications"
     ),
     
+    path('devfilter/<int:project_id>/<int:threshold_score>/',
+         views.DeveloperSkillsMatchingAPIView.as_view(), 
+         name='devfilter'
+     ),
+    
 ]
