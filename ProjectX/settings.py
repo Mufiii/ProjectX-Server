@@ -44,6 +44,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_countries',
     'rest_framework_simplejwt',
+    'drf_yasg',
+    'corsheaders',
+    'django_celery_beat',
+    'django_celery_results',
     'debug_toolbar',
     'rest_framework',
     'accounts',
@@ -54,12 +58,13 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = 'ProjectX.urls'
@@ -198,5 +203,36 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
-# celery config
+#swagger settings
 
+#swagger
+SWAGGER_SETTINGS = {
+    "TITLE": "ProjectX",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SECURITY_DEFINITIONS":{
+        'Bearer': {
+            'in': 'header',
+            'name': 'Authorization',
+            'type': 'apiKey',
+        },
+    }
+}
+
+
+
+# celery Configuration
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Kolkata'
+
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+
+# CORS Configuration
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:7000",
+    "http://localhost:5173",
+    "http://127.0.0.1:3000",
+]

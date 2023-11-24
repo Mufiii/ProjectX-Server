@@ -14,6 +14,7 @@ from rest_framework.decorators import permission_classes
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.db.models import Q
 from developer.serializers import DevProfileSerializer
+# from .task import send_emails_to_selected_users
 
 class VendorProfileView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -154,6 +155,7 @@ class DeveloperSkillsMatchingAPIView(APIView):
         
         applicant_skills = {}
         skills_required = set()
+        
         for entry in skills_matched:
             skills_required.add(entry['skills__name'])
             applicants = entry['applicants__user__email']
@@ -166,13 +168,16 @@ class DeveloperSkillsMatchingAPIView(APIView):
         matching_results = []
 
         for key,value in applicant_skills.items():
-            data = {key:(len((set(value)).intersection(skills_required))/len(skills_required))*100}
+            data = {key:(len((set(value)).intersection(skills_required))/len(skills_required)) * 100 }
             if data[key] >= float(threshold_score):
                 matching_results.append(data)
+
                 
         return Response(
             {'data':matching_results},
             status=status.HTTP_200_OK
         )
-    
+        
+        
+
     
