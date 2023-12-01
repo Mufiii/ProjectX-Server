@@ -1,5 +1,6 @@
+import datetime
 from rest_framework import serializers
-from .models import *
+from .models import Education,Developer,Skill
 from accounts.models import User
 from vendor.models import Project
 
@@ -12,7 +13,7 @@ class SkillSerializer(serializers.ModelSerializer):
 
 
 
-class DevProfileSerializer(serializers.ModelSerializer):
+class DevProfileListSerializer(serializers.ModelSerializer):
     profile_picture = serializers.ImageField()
     
     class Meta:
@@ -20,23 +21,10 @@ class DevProfileSerializer(serializers.ModelSerializer):
         fields = ['user','profile_picture','headline','description','gender','date_of_birth',
                   'skills','experience','resume','qualification','city','state','media_links']
         extra_kwargs = {'user': {"read_only": True}}
-        
-        # def update(self, instance, validated_data):
-        #     dev_profile_data = validated_data.get('dev_profile', {})
-        #     skills = dev_profile_data.get('skills', [])
-        #     print(skills,'ddddd')
+               
             
-        #     # Call the custom method to update skills
-        #     self.update_skills(instance, skills) 
-
-        #     # Rest of the update logic
-        #     return super().update(instance, validated_data)
-        
-            
-        
-            
-class DeveloperSerializer(serializers.ModelSerializer):
-    dev_profile = DevProfileSerializer()
+class DeveloperCreateUpdateSerializer(serializers.ModelSerializer):
+    dev_profile = DevProfileListSerializer()
     # Define a SerializerMethodField to handle the CountryField
     country = serializers.SerializerMethodField()
     
@@ -90,7 +78,7 @@ class DeveloperSerializer(serializers.ModelSerializer):
 
         
 
-class ProjectViewSerializer(serializers.ModelSerializer):
+class ProjectListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Project
@@ -98,9 +86,42 @@ class ProjectViewSerializer(serializers.ModelSerializer):
                   'level','skills']
         
         
-            
         
+class DevEducationListSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Education
+        fields = ['school','degree','field_of_study','description','start_date','end_date']   
         
+
+class DevEducationPostSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Education
+        fields = ['id','school','degree','field_of_study','description','start_date','end_date']
+        
+    
+    def validate(self, data):
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+
+        if start_date > end_date:
+            raise serializers.ValidationError(
+                "Start date must be less than end date"
+            )
+        return data
+    
+    
+    def update(self, instance, validated_data):
+        instance.school = validated_data.get('school',instance.school)
+        instance.degree = validated_data.get('degree',instance.degree)
+        instance.field_of_study = validated_data.get('field_of_study',instance.field_of_study)
+        instance.description = validated_data.get('description',instance.description)
+        instance.start_date = validated_data.get('start_date',instance.start_date)
+        instance.end_date = validated_data.get('end_date',instance.end_date)
+        instance.save()
+        
+        return instance 
         
         
         

@@ -1,18 +1,18 @@
 from rest_framework import serializers
 from .models import *
 from accounts.models import User
-from developer.serializers import SkillSerializer,DevProfileSerializer
+from developer.serializers import SkillSerializer,DevProfileListSerializer
 from datetime import datetime
 from django.utils import timezone
 
-class VendorProfileSerializer(serializers.ModelSerializer):
+class VendorProfileChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = BusinessVendor
         fields = "__all__"
         
         
 class VendorSerializer(serializers.ModelSerializer):
-    vendor_profile = VendorProfileSerializer() 
+    vendor_profile = VendorProfileChoiceSerializer() 
 
     class Meta:
         model = User
@@ -46,7 +46,7 @@ class VendorSerializer(serializers.ModelSerializer):
 class ProjectSerializer(serializers.ModelSerializer):
     skills = serializers.PrimaryKeyRelatedField(many=True, queryset=Skill.objects.all())
     # skills = SkillSerializer(many=True)
-    applicants = DevProfileSerializer(many=True)
+    applicants = DevProfileListSerializer(many=True)
     class Meta:
         model = Project
         fields = ['skills','applicants']

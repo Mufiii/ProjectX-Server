@@ -1,6 +1,5 @@
 
-from django.contrib import admin
-from django.urls import path , include
+from django.urls import path 
 from accounts import views
 
 urlpatterns = [
@@ -9,5 +8,6 @@ urlpatterns = [
     path('hire_talent/',views.VendorRegistrationView.as_view(),name='hire_talent'),
     path('email_verify/',views.VerifyEmail.as_view(),name='email_verify'),
     path('login/',views.UserLoginRequestAPIView.as_view(),name='login'),
-    path('loginotp/',views.LoginOtpverification.as_view(),name='loginotp'),
+    path('otpverify/',views.LoginOtpverification.as_view(),name='loginotp'),
 ]
+

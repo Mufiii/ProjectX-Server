@@ -16,8 +16,17 @@ class MytokenSerializer(TokenObtainPairSerializer):
         return token
         
 
-class DeveloperSerializer(serializers.Serializer):
-    email = serializers.EmailField()
+class DeveloperSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'id',
+            'first_name',
+            'last_name',
+            'email',
+            'country'
+        ]
+    
     
 
 

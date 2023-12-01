@@ -3,7 +3,6 @@ from django.dispatch import receiver
 from .models import User
 from vendor.models import BusinessVendor
 from developer.models import Developer
-import logging
 
 
 

@@ -1,5 +1,4 @@
 from .serializer import (
-    VendorProfileSerializer,
     VendorSerializer,
     ProjectSerializer,
     ProjectProposalSerializer,
@@ -13,8 +12,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.db.models import Q
-from developer.serializers import DevProfileSerializer
-# from .task import send_emails_to_selected_users
+from vendor.tasks import send_email_task
+
 
 class VendorProfileView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -141,7 +140,15 @@ class DeveloperApplicationsListAPIView(APIView):
 
 
 
+
+
+        
+
+
+
+
 class DeveloperSkillsMatchingAPIView(APIView):
+    
     def get(self,request,project_id, threshold_score, format=None):
         project = Project.objects.filter(id=project_id).prefetch_related("applicants","skills")
         
@@ -152,10 +159,9 @@ class DeveloperSkillsMatchingAPIView(APIView):
         )
 
         skills_matched = project.values('applicants__user__email','applicants__skills__name','skills__name')
-        
         applicant_skills = {}
         skills_required = set()
-        
+            
         for entry in skills_matched:
             skills_required.add(entry['skills__name'])
             applicants = entry['applicants__user__email']
@@ -164,20 +170,29 @@ class DeveloperSkillsMatchingAPIView(APIView):
                 applicant_skills[applicants].append(skills)
             else:
                 applicant_skills[applicants] = [skills]
-                
+                    
         matching_results = []
 
         for key,value in applicant_skills.items():
             data = {key:(len((set(value)).intersection(skills_required))/len(skills_required)) * 100 }
+            
             if data[key] >= float(threshold_score):
-                matching_results.append(data)
-
-                
+                    matching_results.append(data)
+                    
+        # for user in matching_results:
+        #     # recipient_email = user.email
+        #     # print(recipient_email)
+        #     subject = "Congratulations! You have been selected for Project."
+        #     message = "Your custom email message goes here."
+        #     print(user)
+            
+        #     send_email_task.delay( subject, message)
+               
         return Response(
             {'data':matching_results},
             status=status.HTTP_200_OK
         )
         
-        
+ 
 
-    
+  

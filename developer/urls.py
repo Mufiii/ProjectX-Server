@@ -23,5 +23,12 @@ urlpatterns = [
          name="view_projects"
     ),
     
-    
+    path('education/',
+         views.DeveloperEducationListCreateApiView.as_view(),
+         name="education"
+    ),
+    path('education/<int:pk>/',
+         views.DeveloperEducationGetUpdateAPIView.as_view(),
+         name="education"
+    ),
 ]

@@ -1,17 +1,19 @@
 from django.shortcuts import render
 from .serializers import (
-    DevProfileSerializer,DeveloperSerializer,
-    ProjectViewSerializer
+    DevProfileListSerializer,
+    DeveloperCreateUpdateSerializer,
+    ProjectListSerializer,
+    DevEducationListSerializer,
+    DevEducationPostSerializer
 )
 from vendor.serializer import ProjectProposalSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import Developer
+from .models import Developer,Education,Experience
 from accounts.models import User
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.decorators import permission_classes,parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 from vendor.models import Project,ProjectProposal
 from django.shortcuts import get_object_or_404
@@ -21,13 +23,13 @@ class DevProfileView(APIView):
     authentication_classes = (JWTAuthentication,)
     
     def get(self,request,*args,**kwargs):
-        serializer = DeveloperSerializer(request.user)
+        serializer = DevProfileListSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 
     def put(self,request,*args,**kwargs):
-        serializer = DeveloperSerializer(
+        serializer = DeveloperCreateUpdateSerializer(
         request.user, data=request.data , partial=True)
         if serializer.is_valid():
             user = User.objects.filter(id=request.user.id).first()
@@ -55,6 +57,65 @@ class DevProfileView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
+class DeveloperEducationListCreateApiView(APIView):
+    def get(self,request,*args,**kwargs):
+        user = Education.objects.filter(developer_id=request.user.id)
+        serializer = DevEducationListSerializer(user, many=True) 
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    
+    def post(self,request,*args,**kwargs):
+        serializer = DevEducationPostSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                developer_instance, created = Developer.objects.get_or_create(user=request.user)
+                user = Education.objects.create(
+                    developer = developer_instance,
+                    school = serializer.validated_data.get('school'),
+                    degree = serializer.validated_data.get('degree'),
+                    field_of_study = serializer.validated_data.get('field_of_study'),
+                    description = serializer.validated_data.get('description'),
+                    start_date = serializer.validated_data.get('start_date'),
+                    end_date = serializer.validated_data.get('end_date'),
+                )
+                user.save()
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_200_OK
+                )
+            except Exception as e:
+                return Response({"msg": f"There was an error: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"errors": serializer.errors},status=status.HTTP_400_BAD_REQUEST)
+        
+
+class DeveloperEducationGetUpdateAPIView(APIView):
+    def get(self,request,pk=None):
+        instance = Education.objects.get(id=pk)
+        serializer = DevEducationPostSerializer(instance)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+    
+    def put(self,request,pk=None):
+        instance = Education.objects.get(id=pk)
+        serializer = DevEducationPostSerializer(
+            instance,data=request.data,partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+               {"Msg":"Data Updated","Data":serializer.data},
+               status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self,request,pk=None):
+        instance = Education.objects.get(id=pk)
+        instance.delete()
+        return Response(
+            {'Msg':"Education instance deleted sucessfully"},
+            status=status.HTTP_200_OK
+        )
+
+
 
 
 class DevViewProjectAPIView(APIView):
@@ -68,7 +129,7 @@ class DevViewProjectAPIView(APIView):
             return Response(
                 {'msg':"No Projects Found"},status=status.HTTP_400_BAD_REQUEST
             )
-        serializer = ProjectViewSerializer(projects,many=True)
+        serializer = ProjectListSerializer(projects,many=True)
         return Response(
             serializer.data,status=status.HTTP_200_OK
         ) 
@@ -82,7 +143,7 @@ class DevProjectProposalView(APIView):
     def get(self,request,project_id=None):
         try:
             project = Project.objects.get(id=project_id)
-            serializer = ProjectViewSerializer(project)
+            serializer = ProjectListSerializer(project)
             
             proposal_serializer = ProjectProposalSerializer()
             
