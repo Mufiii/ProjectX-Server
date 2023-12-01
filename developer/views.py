@@ -4,7 +4,9 @@ from .serializers import (
     DeveloperCreateUpdateSerializer,
     ProjectListSerializer,
     DevEducationListSerializer,
-    DevEducationPostSerializer
+    DevEducationPostSerializer,
+    DevExperienceListSerializer,
+    DevExperiencePostSerializer
 )
 from vendor.serializer import ProjectProposalSerializer
 from rest_framework import status
@@ -81,7 +83,7 @@ class DeveloperEducationListCreateApiView(APIView):
                 user.save()
                 return Response(
                     serializer.data,
-                    status=status.HTTP_200_OK
+                    status=status.HTTP_201_CREATED
                 )
             except Exception as e:
                 return Response({"msg": f"There was an error: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
@@ -116,6 +118,47 @@ class DeveloperEducationGetUpdateAPIView(APIView):
         )
 
 
+
+class DevExperienceListCreateAPIView(APIView):
+    def get(self,request):
+        instance = Experience.objects.filter(developer_id=request.user.id)
+        serializer = DevExperienceListSerializer(instance,many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+    
+    def post(self,request):
+        serializer = DevExperiencePostSerializer(data=request.data)
+        developer, created = Developer.objects.get_or_create(user=request.user)
+        if serializer.is_valid():
+            exp = Experience.objects.create(
+                developer = developer,
+                title = serializer.validated_data.get('title'),
+                company = serializer.validated_data.get('company'),
+                location = serializer.validated_data.get('location'),
+                country = serializer.validated_data.get('country'),
+                start_date = serializer.validated_data.get('start_date'),
+                end_date = serializer.validated_data.get('end_date'),
+            )
+
+            return Response(
+                DevExperiencePostSerializer(exp).data,
+                status=status.HTTP_201_CREATED
+            )
+        return Response(
+            {"error":serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+class DevExperienceGetUpdateAPIView(APIView):
+    def get(self,request,experience_id):
+        instance = Experience.objects.filter(id=experience_id)
+        print(instance)
+        serializer = DevExperiencePostSerializer(instance)
+        return Response(
+            {"data":serializer.data},
+            status=status.HTTP_200_OK
+        )
+    
 
 
 class DevViewProjectAPIView(APIView):

@@ -25,10 +25,19 @@ urlpatterns = [
     
     path('education/',
          views.DeveloperEducationListCreateApiView.as_view(),
-         name="education"
+         name="key_education"
     ),
     path('education/<int:pk>/',
          views.DeveloperEducationGetUpdateAPIView.as_view(),
          name="education"
+    ),
+    path('experience/',
+         views.DevExperienceListCreateAPIView.as_view(),
+         name="key_experience"
+    ),
+    
+    path('experience/<int:experience_id>/',
+         views.DevExperienceGetUpdateAPIView.as_view(),
+         name="experience"
     ),
 ]

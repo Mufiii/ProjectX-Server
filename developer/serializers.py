@@ -1,6 +1,6 @@
 import datetime
 from rest_framework import serializers
-from .models import Education,Developer,Skill
+from .models import Education,Developer,Skill,Experience
 from accounts.models import User
 from vendor.models import Project
 
@@ -95,7 +95,6 @@ class DevEducationListSerializer(serializers.ModelSerializer):
         
 
 class DevEducationPostSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Education
         fields = ['id','school','degree','field_of_study','description','start_date','end_date']
@@ -122,12 +121,20 @@ class DevEducationPostSerializer(serializers.ModelSerializer):
         instance.save()
         
         return instance 
+         
+        
+class DevExperienceListSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Experience
+        fields = ['id','title','company','location','country','is_working','start_date','end_date']
         
         
-        
-        
-        
-        
+class DevExperiencePostSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Experience
+        fields = ['id','title','company','location','country','is_working','start_date','end_date']
         
         
         
