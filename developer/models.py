@@ -1,7 +1,7 @@
 from django.db import models
 from accounts.models import *
 from django_countries.fields import CountryField
-# Create your models here.
+from django.core.exceptions import ValidationError
 
 
     
@@ -12,12 +12,16 @@ class Skill(models.Model):
       return self.name
 
 class DateMixin(models.Model):
-    start_date = models.DateField(blank=True,null=True)
-    end_date = models.DateField(blank=True,null=True)
+    start_date = models.CharField(max_length=255,blank=True,null=True)
+    end_date = models.CharField(max_length=255,blank=True,null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     class Meta:
         abstract = True
+        
+    def clean(self):
+        if self.start_date and self.end_date and self.start_date > self.end_date:
+            raise ValidationError("Start date must be less than end date")
 
 
 

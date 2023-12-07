@@ -4,11 +4,14 @@ from .models import Developer,Skill,Education,Experience
 
 
 admin.site.register(Developer)
-admin.site.register(Skill)
 
 @admin.register(Education)
 class UserAdmin(admin.ModelAdmin):
     list_display = ('id','developer', 'school','degree' ,'field_of_study','description')
+    
+@admin.register(Skill)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('id','name')
     
 @admin.register(Experience)
 class UserAdmin(admin.ModelAdmin):

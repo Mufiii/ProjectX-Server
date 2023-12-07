@@ -36,7 +36,7 @@ urlpatterns = [
          name="key_experience"
     ),
     
-    path('experience/<int:experience_id>/',
+    path('experience/<int:pk>/',
          views.DevExperienceGetUpdateAPIView.as_view(),
          name="experience"
     ),

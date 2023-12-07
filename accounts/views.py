@@ -103,7 +103,7 @@ class VendorRegistrationView(APIView):
     @swagger_auto_schema(
         tags=["Authentication"],
         operation_description="Vendor Registeration",
-        operation_summary="This endpoint is used for institute registeration",
+        operation_summary="This endpoint is used for Vendor registeration",
         request_body= VendorSerializer,
         responses={
             200: VendorSerializer,
@@ -185,7 +185,6 @@ class UserLoginRequestAPIView(APIView):
     def post(self,request):
         email = request.data.get('email')
         user = User.objects.get(email=email)
-        
 
         try:
             otp = math.floor(random.randint(100000,999999))
@@ -210,12 +209,13 @@ class LoginOtpverification(APIView):
     def post(self,request):
         email = request.data.get('email')
         entered_otp = request.data.get('entered_otp')
+        print(entered_otp,'op')
         try :
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             return Response({'msg':"user not found"})
-        
-        if int(user.otp) == int(entered_otp):
+
+        if  int(user.otp) == int(entered_otp):
             token = get_token_for_user(user)
             return Response({"msg":"User loggined successfully","token":token},
                             status=status.HTTP_200_OK

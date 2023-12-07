@@ -6,13 +6,14 @@ from .serializers import (
     DevEducationListSerializer,
     DevEducationPostSerializer,
     DevExperienceListSerializer,
-    DevExperiencePostSerializer
+    DevExperiencePostSerializer,
+    SkillSerializer
 )
 from vendor.serializer import ProjectProposalSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import Developer,Education,Experience
+from .models import Developer,Education,Experience,Skill
 from accounts.models import User
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -25,14 +26,19 @@ class DevProfileView(APIView):
     authentication_classes = (JWTAuthentication,)
     
     def get(self,request,*args,**kwargs):
-        serializer = DevProfileListSerializer(request.user)
+        serializer = DeveloperCreateUpdateSerializer(request.user)
+        q = request.GET.get('q')
+        if q:
+            data = Skill.objects.filter(name__istartswith=q).values()
+            return Response(data,status=status.HTTP_200_OK)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 
     def put(self,request,*args,**kwargs):
         serializer = DeveloperCreateUpdateSerializer(
-        request.user, data=request.data , partial=True)
+        request.user, data=request.data , partial=True
+    )
         if serializer.is_valid():
             user = User.objects.filter(id=request.user.id).first()
             # Here am Updating profile image
@@ -55,11 +61,15 @@ class DevProfileView(APIView):
             user.save()
             serializer.save()
         
+        
             return Response({"msg":"Data Updated", "data":serializer.data},status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
+          
 
 class DeveloperEducationListCreateApiView(APIView):
+    permission_classes = (IsAuthenticated,)
+    
     def get(self,request,*args,**kwargs):
         user = Education.objects.filter(developer_id=request.user.id)
         serializer = DevEducationListSerializer(user, many=True) 
@@ -91,6 +101,8 @@ class DeveloperEducationListCreateApiView(APIView):
         
 
 class DeveloperEducationGetUpdateAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+    
     def get(self,request,pk=None):
         instance = Education.objects.get(id=pk)
         serializer = DevEducationPostSerializer(instance)
@@ -120,12 +132,15 @@ class DeveloperEducationGetUpdateAPIView(APIView):
 
 
 class DevExperienceListCreateAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+    
     def get(self,request):
         instance = Experience.objects.filter(developer_id=request.user.id)
         serializer = DevExperienceListSerializer(instance,many=True)
         return Response(serializer.data,status=status.HTTP_200_OK)
     
     def post(self,request):
+        print(request.data)
         serializer = DevExperiencePostSerializer(data=request.data)
         developer, created = Developer.objects.get_or_create(user=request.user)
         if serializer.is_valid():
@@ -150,15 +165,39 @@ class DevExperienceListCreateAPIView(APIView):
 
 
 class DevExperienceGetUpdateAPIView(APIView):
-    def get(self,request,experience_id):
-        instance = Experience.objects.filter(id=experience_id)
-        print(instance)
-        serializer = DevExperiencePostSerializer(instance)
-        return Response(
-            {"data":serializer.data},
-            status=status.HTTP_200_OK
-        )
+    permission_classes = (IsAuthenticated,)
     
+    def get(self,request,experience_id):
+        try:
+            instance = Experience.objects.get(id=experience_id)
+            print(instance)
+            serializer = DevExperiencePostSerializer(instance)
+            return Response(
+                {"data":serializer.data},
+                status=status.HTTP_200_OK
+            )
+        except:
+            return Response({"msg":"Not Found"},status=status.HTTP_404_NOT_FOUND)
+        
+        
+    def put(self,request,experience_id):
+        instance = Experience.objects.get(id=experience_id)
+        print(instance)
+        serializer = DevExperiencePostSerializer(
+            instance,data=request.data,partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                serializer.data,status=status.HTTP_201_CREATED
+            )
+        return Response({"error":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self,request,experience_id):
+        instance = Experience.objects.filter(id=experience_id)
+        instance.delete()
+        return Response({"Msg":"Deleted Successfully"},status=status.HTTP_200_OK)
+
 
 
 class DevViewProjectAPIView(APIView):

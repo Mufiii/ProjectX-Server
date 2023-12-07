@@ -9,17 +9,17 @@ class SkillSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Skill
-        fields = ['name']
-
-
+        fields = ['id','name']
+    
+    # def update(self, instance, validated_data):
+          
+     
 
 class DevProfileListSerializer(serializers.ModelSerializer):
-    profile_picture = serializers.ImageField()
-    
     class Meta:
         model = Developer
         fields = ['user','profile_picture','headline','description','gender','date_of_birth',
-                  'skills','experience','resume','qualification','city','state','media_links']
+                  'skills','resume','city','state','media_links']
         extra_kwargs = {'user': {"read_only": True}}
                
             
@@ -64,16 +64,22 @@ class DeveloperCreateUpdateSerializer(serializers.ModelSerializer):
         instance.first_name = validated_data.get('first_name', instance.first_name)
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.country = validated_data.get('country', instance.country)
-        instance.save()
 
         # Update DevProfile related to the User instance
         dev_profile_data = validated_data.pop('dev_profile', None)
         if dev_profile_data:
+            print(dev_profile_data["skills"])
             dev_profile_instance = instance.dev_profile  # Get the related DevProfile instance
-            for attr, value in dev_profile_data.items():  # Fixed the variable to iterate over
-                setattr(dev_profile_instance, attr, value)
+            for attr, value in dev_profile_data.items():
+                if attr != "skills":
+                    setattr(dev_profile_instance, attr, value)
+            skills = dev_profile_data.get('skills',{}) 
+            print(skills)
+            if skills: 
+                dev_profile_instance.skills.clear()
+                dev_profile_instance.skills.add(*skills)   
             dev_profile_instance.save()
-
+        instance.save()
         return instance
 
         
@@ -98,17 +104,6 @@ class DevEducationPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Education
         fields = ['id','school','degree','field_of_study','description','start_date','end_date']
-        
-    
-    def validate(self, data):
-        start_date = data.get('start_date')
-        end_date = data.get('end_date')
-
-        if start_date > end_date:
-            raise serializers.ValidationError(
-                "Start date must be less than end date"
-            )
-        return data
     
     
     def update(self, instance, validated_data):
@@ -137,4 +132,14 @@ class DevExperiencePostSerializer(serializers.ModelSerializer):
         fields = ['id','title','company','location','country','is_working','start_date','end_date']
         
         
-        
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.company = validated_data.get('company', instance.company)
+        instance.location = validated_data.get('location', instance.location)
+        instance.country = validated_data.get('country', instance.country)
+        instance.is_working = validated_data.get('is_working', instance.is_working)
+        instance.start_date = validated_data.get('start_date', instance.start_date)
+        instance.end_date = validated_data.get('end_date', instance.end_date)
+        instance.save()
+
+        return instance
