@@ -20,8 +20,8 @@ app.config_from_object('django.conf:settings' , namespace='CELERY')
 
 app.conf.beat_schedule = {
     "send_emails": {
-        "task": "vendor.tasks.send_mail_task",
-        "schedule": timedelta(day=1),  
+        "task": "vendor.tasks.send_email_task",
+        "schedule": timedelta(minutes=1),
     }
 }
 

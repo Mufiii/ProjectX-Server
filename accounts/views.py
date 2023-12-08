@@ -72,7 +72,7 @@ class DeveloperRegistrationAPIView(APIView):
               status=status.HTTP_201_CREATED
             )
         return Response(
-            {serializer.errors},
+            {"errors":serializer.errors},
             status=status.HTTP_400_BAD_REQUEST
         )
 

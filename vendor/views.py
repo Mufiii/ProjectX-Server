@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from .serializer import (
     VendorSerializer,
     ProjectSerializer,
@@ -12,7 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.db.models import Q
-from vendor.tasks import send_email_task
+from .tasks import send_email_task
 
 
 class VendorProfileView(APIView):
@@ -137,62 +138,36 @@ class DeveloperApplicationsListAPIView(APIView):
         except Exception as e:
             print(e)
             return Response({'error':"There is an error"},status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
-
-        
-
-
-
-
-class DeveloperSkillsMatchingAPIView(APIView):
-    
-    def get(self,request,project_id, threshold_score, format=None):
-        project = Project.objects.filter(id=project_id).prefetch_related("applicants","skills")
-        
-        if not project:
-            return Response(
-                {"error": "Project not found"},
-                status=status.HTTP_404_NOT_FOUND
-        )
-
-        skills_matched = project.values('applicants__user__email','applicants__skills__name','skills__name')
-        applicant_skills = {}
-        skills_required = set()
-            
-        for entry in skills_matched:
-            skills_required.add(entry['skills__name'])
-            applicants = entry['applicants__user__email']
-            skills = entry['applicants__skills__name']
-            if applicants in applicant_skills:
-                applicant_skills[applicants].append(skills)
-            else:
-                applicant_skills[applicants] = [skills]
-                    
-        matching_results = []
-
-        for key,value in applicant_skills.items():
-            data = {key:(len((set(value)).intersection(skills_required))/len(skills_required)) * 100 }
-            
-            if data[key] >= float(threshold_score):
-                    matching_results.append(data)
-                    
-        # for user in matching_results:
-        #     # recipient_email = user.email
-        #     # print(recipient_email)
-        #     subject = "Congratulations! You have been selected for Project."
-        #     message = "Your custom email message goes here."
-        #     print(user)
-            
-        #     send_email_task.delay( subject, message)
-               
-        return Response(
-            {'data':matching_results},
-            status=status.HTTP_200_OK
-        )
         
  
 
   
+class DeveloperSkillsMatchingAPIView(APIView):
+
+    def get(self, request, project_id, threshold_score, format=None):
+        project = get_object_or_404(Project, id=project_id)
+        
+        skills_required = set(project.skills.values_list('name', flat=True))
+
+        matching_results = []
+
+        for applicant in project.applicants.prefetch_related('skills').all():
+            applicant_skills = set(applicant.skills.values_list('name', flat=True))
+            match_percentage = len(applicant_skills.intersection(skills_required)) / len(skills_required) * 100
+
+            if match_percentage >= float(threshold_score):
+                matching_results.append({
+                    'email': applicant.user.email,
+                    'match_percentage': match_percentage
+                })
+
+        selected_users_emails = [result['email'] for result in matching_results]
+        print(selected_users_emails)
+        send_email_task.apply_async(
+            kwargs={
+                "selected_users_emails": selected_users_emails,
+                "project_id": project_id,
+            },
+        )
+
+        return Response({'data': matching_results}, status=status.HTTP_200_OK)
