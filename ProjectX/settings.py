@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'accounts',
     'developer',
     'vendor',
+    'monitorization'
 ]
 
 MIDDLEWARE = [
@@ -203,7 +204,16 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
-#swagger settings
+
+
+# CORS Configuration
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:7000",
+    "http://localhost:5173",
+    "http://127.0.0.1:3000",
+]
+
+
 
 #swagger
 SWAGGER_SETTINGS = {
@@ -221,18 +231,12 @@ SWAGGER_SETTINGS = {
 
 
 # celery Configuration
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379' #79
+
+CELERY_BROKER_URL = 'redis://127.0.0.1:6380' #79
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Kolkata'
 
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6380/0'
 CELERY_BEAT_SCHEDULER="django_celery_beat.schedulers:DatabaseScheduler"
-
-# CORS Configuration
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:7000",
-    "http://localhost:5173",
-    "http://127.0.0.1:3000",
-]
