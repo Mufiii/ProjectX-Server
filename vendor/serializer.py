@@ -41,15 +41,26 @@ class VendorSerializer(serializers.ModelSerializer):
             vendor_instance.save()
             
         return instance
+    
+class CategoryChoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['name']
+
+class LevelChoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Level
+        fields = ['name']
 
 
 class ProjectSerializer(serializers.ModelSerializer):
     skills = serializers.PrimaryKeyRelatedField(many=True, queryset=Skill.objects.all())
-    # skills = SkillSerializer(many=True)
-    applicants = DevProfileListSerializer(many=True)
+    category = CategoryChoiceSerializer()
+    level = LevelChoiceSerializer()
+    # applicants = DevProfileListSerializer(many=True)
     class Meta:
         model = Project
-        fields = ['skills','applicants']
+        exclude = ('applicants',)
     
     # validate date   
     def validate_end_date(self,value):

@@ -1,16 +1,18 @@
 from django.shortcuts import render
-from .models import Workspace
+from .models import Workspace , Board
 from .serializers import(
   WorkSpaceListSerializer,
-  WorkSpacePostSerializer
+  WorkSpacePostSerializer,
+  BoardListSerializer,
+  BoardPostSerializer
 )
 from rest_framework import status
 from rest_framework.views import APIView
-from vendor.models import BusinessVendor
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db.models import Q
+from rest_framework import generics
 
 
 
@@ -70,4 +72,20 @@ class WorkSpaceGetUpdateAPIView(APIView):
             {"msg":"Workspace deleted Successfully"},
             status=status.HTTP_200_OK
         )
-             
+
+
+
+class BoardListCreateView(generics.ListCreateAPIView):
+    queryset = Board.objects.all()
+    serializer_class = BoardListSerializer
+    
+    
+class BoardGetUpdateView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Board.objects.all()
+    serializer_class = BoardPostSerializer
+    
+    
+class CardsListCreateAPIView(APIView):
+    def get(self,request):
+        pass
+    

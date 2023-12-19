@@ -7,7 +7,8 @@ from .serializers import (
     DevEducationPostSerializer,
     DevExperienceListSerializer,
     DevExperiencePostSerializer,
-    SkillSerializer
+    SkillSerializer,
+    SkillListUpdateSerializer
 )
 from vendor.serializer import ProjectProposalSerializer
 from rest_framework import status
@@ -27,10 +28,6 @@ class DevProfileView(APIView):
     
     def get(self,request,*args,**kwargs):
         serializer = DeveloperCreateUpdateSerializer(request.user)
-        q = request.GET.get('q')
-        if q:
-            data = Skill.objects.filter(name__istartswith=q).values()
-            return Response(data,status=status.HTTP_200_OK)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -258,4 +255,38 @@ class DevProjectProposalView(APIView):
             return Response(ProjectProposalSerializer(t).data, status=status.HTTP_201_CREATED)
 
         return Response({"errors": "There is an error"}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+
+class SkillsListUpdatingAPIView(APIView):
+    def get(self,request):
+        q = request.GET.get('q')
+        print(q)
+        if q:
+            data = Skill.objects.filter(name__istartswith=q).values()
+            return Response(data,status=status.HTTP_200_OK)
+        # skills = Skill.objects.all() 
+        # serializer = SkillSerializer(skills, many=True)
+        # return Response( status=status.HTTP_200_OK)
+    
+    def put(self, request):
+        user = request.user.id
+        developer = User.objects.filter(dev_profile=user).first()
+        
+        skills_data = request.data.get('skills', [])
+        serializer = SkillListUpdateSerializer(data={'skills': skills_data})
+
+        if serializer.is_valid(raise_exception=True):
+            developer_profile = developer.dev_profile
+            developer_profile.skills.set(skills_data)
+            return Response({
+                "message": "Skills updated successfully."
+            }, status=status.HTTP_200_OK)
+
+        return Response(
+            {"error": "Invalid data provided for skills."}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+        
+
         

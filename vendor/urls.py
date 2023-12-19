@@ -2,7 +2,7 @@ from django.urls import path
 from .import views
 
 urlpatterns = [
-    path('profileee/',
+    path('vendorprofile/',
          views.VendorProfileView.as_view(),
          name="vendorprofile"
     ),
@@ -26,5 +26,7 @@ urlpatterns = [
          views.DeveloperSkillsMatchingAPIView.as_view(), 
          name='devfilter'
      ),
+    
+
     
 ]

@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     'accounts',
     'developer',
     'vendor',
-    'monitorization'
+    'monitorization',
 ]
 
 MIDDLEWARE = [
@@ -196,11 +196,11 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.MultiPartParser',
     ],
 }
 
 INTERNAL_IPS = [
-    
     "127.0.0.1",
 ]
 
@@ -240,3 +240,4 @@ CELERY_TIMEZONE = 'Asia/Kolkata'
 
 CELERY_RESULT_BACKEND = 'redis://localhost:6380/0'
 CELERY_BEAT_SCHEDULER="django_celery_beat.schedulers:DatabaseScheduler"
+

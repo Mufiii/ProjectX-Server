@@ -40,4 +40,8 @@ urlpatterns = [
          views.DevExperienceGetUpdateAPIView.as_view(),
          name="experience"
     ),
+        path('skills/',
+         views.SkillsListUpdatingAPIView.as_view(), 
+         name='skills'
+     ),
 ]

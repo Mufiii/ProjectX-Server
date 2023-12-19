@@ -11,7 +11,10 @@ class SkillSerializer(serializers.ModelSerializer):
         model = Skill
         fields = ['id','name']
     
-    # def update(self, instance, validated_data):
+class SkillListUpdateSerializer(serializers.Serializer):
+    skills = serializers.ListField(child=serializers.IntegerField())
+
+
           
      
 
@@ -82,7 +85,10 @@ class DeveloperCreateUpdateSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-        
+class SkillListUpdateSerializer(serializers.Serializer):
+    skills = serializers.ListField(child=serializers.IntegerField())
+    
+    
 
 class ProjectListSerializer(serializers.ModelSerializer):
     
