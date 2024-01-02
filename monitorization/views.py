@@ -85,7 +85,7 @@ class BoardGetUpdateView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = BoardPostSerializer
     
     
-class CardsListCreateAPIView(APIView):
-    def get(self,request):
-        pass
+# class CardsListCreateAPIView(APIView):
+#     def get(self,request):
+#         pass
     

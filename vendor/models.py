@@ -18,7 +18,7 @@ class BusinessVendor(models.Model):
     website = models.URLField(max_length=200,blank=True)
     
     def __str__(self):
-        return self.user.first_name
+        return self.user.email
 
 
 class Category(models.Model):
@@ -46,6 +46,9 @@ class Project(models.Model):
     class PRICE_OPTIONS(models.TextChoices):
         fixed = 'Fixed-Price','Fixed-Price',
         range_ = 'Price in a range','Price in a range'
+    class ProjectType_options(models.TextChoices):
+        one_time = 'One-time project','One-time project',
+        ongoing = 'Ongoing project', 'Ongoing Project'
         
     owner = models.ForeignKey(BusinessVendor, on_delete=models.DO_NOTHING)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
@@ -53,7 +56,7 @@ class Project(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(null =True,blank=True)
     note = models.TextField(null=True,blank=True)
-    project_type = models.CharField(max_length=150)
+    project_type = models.CharField(max_length=150,choices=ProjectType_options.choices)
     skills = models.ManyToManyField(Skill,related_name="Required_skills")
     status = models.CharField(max_length=20,choices=STATUS)
     end_date = models.DateField(blank=True,null=True)

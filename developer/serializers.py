@@ -5,11 +5,9 @@ from accounts.models import User
 from vendor.models import Project
 
 
-class SkillSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model = Skill
-        fields = ['id','name']
+class SkillSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
     
 class SkillListUpdateSerializer(serializers.Serializer):
     skills = serializers.ListField(child=serializers.IntegerField())

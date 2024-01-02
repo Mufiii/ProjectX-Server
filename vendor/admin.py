@@ -8,13 +8,19 @@ class adminVendor(admin.ModelAdmin):
     list_display = ['user', 'logo', 'banner', 'about', 'description', 'industry', 'headquaters', 'website']
     
     
-admin.site.register(Level)
-# admin.site.register(Project)
-admin.site.register(Category)
+
 admin.site.register(ProjectProposal)
 
 
 @admin.register(Project)
-class adminVendor(admin.ModelAdmin):
+class adminProject(admin.ModelAdmin):
     list_display = ['id', 'title']
+    
+@admin.register(Category)
+class adminCategory(admin.ModelAdmin):
+    list_display = ['id', 'name']
+    
+@admin.register(Level)
+class adminLevel(admin.ModelAdmin):
+    list_display = ['id', 'name']
     

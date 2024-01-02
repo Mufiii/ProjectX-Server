@@ -3,7 +3,9 @@ from .serializer import (
     VendorSerializer,
     ProjectSerializer,
     ProjectProposalSerializer,
-    ApplicationsFilterSerializer
+    ApplicationsFilterSerializer,
+    ProjectPostSerializer,
+    SkillSerializer
 )
 from rest_framework.response import Response
 from rest_framework import status
@@ -14,6 +16,7 @@ from rest_framework.decorators import permission_classes
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.db.models import Q
 from .tasks import send_email_task
+from rest_framework.parsers import JSONParser
 
 
 class VendorProfileView(APIView):
@@ -59,27 +62,53 @@ class VendorProfileView(APIView):
 class ProjectListCreateAPIView(APIView):
     authentication_classes=(JWTAuthentication,)
     permission_classes=(IsAuthenticated,)
+    parser_classes = [JSONParser]
     
     def get(self,request):
         projects = Project.objects.filter(owner=request.user.id)
         serializer = ProjectSerializer(projects,many=True)
+        print(serializer.data)
         return Response(serializer.data,status=status.HTTP_200_OK)
 
 
-    def post(self,request):
-        serializer = ProjectSerializer(data=request.data)
-        print(serializer)
-        if serializer.is_valid():
-            print(serializer)
-            serializer.save()
+    def post(self, request):
+        serializer = ProjectPostSerializer(data=request.data)
+
+        if serializer.is_valid(raise_exception=True):
+            skills_data = serializer.validated_data.pop("skills", [])
+
+            # Create the project without skills first
+            project = Project.objects.create(
+                owner=request.user.vendor_profile,
+                title=serializer.validated_data.get("title", None),
+                category=serializer.validated_data.get("category", None),
+                level=serializer.validated_data.get("level", None),
+                description=serializer.validated_data.get("description", None),
+                project_type=serializer.validated_data.get("project_type", None),
+                note=serializer.validated_data.get("note", None),
+                end_date=serializer.validated_data.get("end_date", None),
+                price_type=serializer.validated_data.get("price_type", None),
+                price=serializer.validated_data.get("price", None),
+                status=serializer.validated_data.get("status", None),
+            )
+
+            # Get the skills based on the provided IDs
+            skills = Skill.objects.filter(id__in=skills_data)
+            required_skills = SkillSerializer(skills, many=True)
+
+            # Set the skills for the project
+            project.skills.set(skills)
+
             return Response(
-                serializer.data,
+                {'project':ProjectSerializer(project).data,'skills':required_skills.data},
                 status=status.HTTP_200_OK
             )
+
         return Response(
-            serializer.errors, 
+            serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
+
     
 
 
@@ -171,3 +200,20 @@ class DeveloperSkillsMatchingAPIView(APIView):
         )
 
         return Response({'data': matching_results}, status=status.HTTP_200_OK)
+    
+    
+class ProjectSkillsGetAPIView(APIView):
+    def get(self, request):
+        project_id = request.GET.get('project_id') 
+        project = Project.objects.get(id=project_id)
+        
+        ids = list(project.skills.values_list('id',flat=True))
+        skills = Skill.objects.filter(id__in=ids)
+        
+        serialiser = SkillSerializer(
+            skills,many=True
+        )
+        return Response(
+            serialiser.data,
+            status=status.HTTP_200_OK
+        )

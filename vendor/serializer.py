@@ -61,13 +61,29 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         exclude = ('applicants',)
-    
+
+class ProjectPostSerializer(serializers.ModelSerializer):
+    skills = serializers.ListField()
+    class Meta:
+        model = Project
+        fields = ['category','level','title','description','note','project_type','skills','status','end_date',
+                  'price_type','price' ]
+  
     # validate date   
     def validate_end_date(self,value):
         today = datetime.now().date()
         if value < today:
             raise serializers.ValidationError("End Date cannot be in the past.")
         return value
+    
+    # def create(self, validated_data):
+    #     skills_data = validated_data.pop("skills", [])
+    #     project = super().create(validated_data)  # Call the create method of the base class
+
+    #     # Add the skills to the project
+    #     project.skills.set(skills_data)
+    #     return project
+
 
 class ProjectProposalSerializer(serializers.ModelSerializer):
     
