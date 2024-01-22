@@ -4,15 +4,20 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('vendor', '0003_alter_project_project_type'),
+        ("vendor", "0003_alter_project_project_type"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='project',
-            name='project_type',
-            field=models.CharField(choices=[('One-time project', 'One-time project'), ('Ongoing project', 'Ongoing Project')], max_length=150),
+            model_name="project",
+            name="project_type",
+            field=models.CharField(
+                choices=[
+                    ("One-time project", "One-time project"),
+                    ("Ongoing project", "Ongoing Project"),
+                ],
+                max_length=150,
+            ),
         ),
     ]

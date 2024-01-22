@@ -1,42 +1,51 @@
 from rest_framework import serializers
-from .models import Workspace , Board
+
+from .models import Board, Workspace , InviteToWorkspace
+
+
+
+class BoardChoiceSerializer(serializers.ModelSerializer):
+    workspace_id = serializers.IntegerField(write_only=True)
+    class Meta:
+        model = Board
+        fields = ("id", "title", "description", "workspace_id")
+
 
 
 class WorkSpaceListSerializer(serializers.ModelSerializer):
-  
+    boards = BoardChoiceSerializer(many=True, read_only=True,source='board_set')
     class Meta:
         model = Workspace
-        fields = ['id','name','description']
-        
-        
+        fields = ["id", "name", "description",'boards']
+
+
+
+
 class WorkSpacePostSerializer(serializers.ModelSerializer):
-  
     class Meta:
         model = Workspace
-        fields = ['id', 'name', 'description', 'vendor']
-        
-        
+        fields = ["id", "name", "description",'user']
+
+
 class BoardListSerializer(serializers.ModelSerializer):
     workspace_id = serializers.IntegerField(write_only=True)
-
     class Meta:
         model = Board
-        fields = ('id','title','description','workspace_id')
-        
-    def create(self, validated_data):
-        # Extract the workspace_id from the validated data
-        workspace_id = validated_data.pop('workspace_id', None)
-        workspace = Workspace.objects.get(id=workspace_id)
-        # Create the Board instance and associate it with the Workspace
-        board = Board.objects.create(workspace=workspace, **validated_data)
-
-        return board
+        fields = ("id", "title", "description", "workspace_id")
         
         
 class BoardPostSerializer(serializers.ModelSerializer):
-    
+    workspace_id = serializers.IntegerField(write_only=True)
     class Meta:
         model = Board
-        fields = ['id','title','description']
+        fields = ("id", "title", "description", "workspace_id")
         
+        
+        
+        
+class InvitationSerializer(serializers.ModelSerializer):
     
+    class Meta:
+        model = InviteToWorkspace
+        fields = ['user',"workspace","token","is_accepted"]
+

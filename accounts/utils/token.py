@@ -1,13 +1,19 @@
-
-
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
-def get_token_for_user(user):
-    refresh = RefreshToken.for_user(user)
-    
-    return {
-        "refresh":str(refresh),
-        "access": str(refresh.access_token)
-    }
+class MytokenSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user, *args):
+        
+        token = RefreshToken.for_user(user)
+        
+        # Include additional user information in the token payload
+        token["user_id"] = user.id
+        token["email"] = user.email
+        token["username"] = user.username
+        token["is_developer"] = user.is_developer
+        token["is_vendor"] = user.is_vendor
+
+        return token
 
