@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    'daphne',
     "django.contrib.staticfiles",
     "django_countries",
     "rest_framework_simplejwt",
@@ -51,10 +52,12 @@ INSTALLED_APPS = [
     "django_celery_results",
     "debug_toolbar",
     "rest_framework",
+    'channels',
     "accounts",
     "developer",
     "vendor",
     "monitorization",
+    "chatroom"
 ]
 
 MIDDLEWARE = [
@@ -245,3 +248,11 @@ CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 # settings.py
 APPEND_SLASH = False
+
+
+ASGI_APPLICATION = "chatroom.routing.application" #routing.py will handle the ASGI
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': "channels.layers.InMemoryChannelLayer"
+        }
+    }

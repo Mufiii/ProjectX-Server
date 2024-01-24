@@ -26,6 +26,7 @@ urlpatterns = [
     path("developer/", include("developer.urls")),
     path("vendor/", include("vendor.urls")),
     path("", include("monitorization.urls")),
+    # path('chat/', include('chatroom.urls')),
     path(
         "swagger<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"
     ),
