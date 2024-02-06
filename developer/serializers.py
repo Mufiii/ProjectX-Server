@@ -54,7 +54,7 @@ class DevProfileListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Developer
         fields = [
-            "user",
+            'user',
             "profile_picture",
             "headline",
             "description",

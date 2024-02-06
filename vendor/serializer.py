@@ -5,7 +5,6 @@ from rest_framework import serializers
 
 from accounts.models import User
 from developer.serializers import DevProfileListSerializer, SkillSerializer
-
 from .models import *
 
 
@@ -159,3 +158,44 @@ class ProjectListSerializer(serializers.ModelSerializer):
         ]
 
 
+class DevProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Developer
+        fields = [
+            "profile_picture",
+            "headline",
+            "description",
+            "gender",
+            "date_of_birth",
+            "skills",
+            "resume",
+            "city",
+            "state",
+            "media_links",
+        ]
+        extra_kwargs = {"user": {"read_only": True}}
+
+
+
+class DeveloperListSerializer(serializers.ModelSerializer):
+    country = serializers.SerializerMethodField()
+    dev_profile = DevProfileSerializer()
+    class Meta:
+        model = User
+        fields = ["id", "first_name", "username", "last_name", "email", "country",'dev_profile']
+    
+    def get_country(self, obj):
+        country = None
+
+        # Check if the 'country' attribute exists
+        if hasattr(obj, "country"):
+            country_object = getattr(obj, "country")
+
+            if country_object:
+                # Modify this line to return the appropriate field or attribute from the 'Country' model
+                country = (
+                    country_object.name
+                )  # For example, retrieving the country's name
+
+        return country

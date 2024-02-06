@@ -28,4 +28,9 @@ urlpatterns = [
         views.ProjectSkillsGetAPIView.as_view(), 
         name="devfilter"
     ),
+    path(
+        "developers/", 
+        views.DeveloperListAPIView.as_view(), 
+        name="developers"
+    ),
 ]

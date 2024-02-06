@@ -17,6 +17,7 @@ from .serializer import (
     SkillSerializer,
     ProjectProposalGetSerializer,
     VendorSerializer,
+    DeveloperListSerializer
 )
 from .tasks import send_email_task
 
@@ -206,3 +207,21 @@ class ProjectSkillsGetAPIView(APIView):
 
         serialiser = SkillSerializer(skills, many=True)
         return Response(serialiser.data, status=status.HTTP_200_OK)
+
+
+class DeveloperListAPIView(APIView):
+    def get(self, request):
+        q_base = request.GET.get('q')
+        if q_base:
+            users = User.objects.filter(
+                Q(username__icontains=q_base) |
+                Q(dev_profile__headline__icontains=q_base)
+            ).select_related('dev_profile')
+            serializer = DeveloperListSerializer(users, many=True)
+            if users.exists():
+                return Response({'users': serializer.data}, status=status.HTTP_200_OK)
+            else:
+                return Response({'detail': 'No users found.'}, status=status.HTTP_404_NOT_FOUND)
+        developers = User.objects.filter(is_developer=True)
+        serializer = DeveloperListSerializer(developers,many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)

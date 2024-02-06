@@ -31,7 +31,7 @@ SECRET_KEY = "django-insecure--+qvr1jb2ps-ae8wk$)=k03lkvzuly_a34&*dlx!y$b)4=ml4@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -57,7 +57,8 @@ INSTALLED_APPS = [
     "developer",
     "vendor",
     "monitorization",
-    "chatroom"
+    "chatroom",
+    'invite',
 ]
 
 MIDDLEWARE = [
@@ -90,6 +91,7 @@ TEMPLATES = [
     },
 ]
 
+ASGI_APPLICATION = "ProjectX.asgi.application" #routing.py will handle the ASGI
 WSGI_APPLICATION = "ProjectX.wsgi.application"
 
 
@@ -250,7 +252,6 @@ CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 APPEND_SLASH = False
 
 
-ASGI_APPLICATION = "chatroom.routing.application" #routing.py will handle the ASGI
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': "channels.layers.InMemoryChannelLayer"

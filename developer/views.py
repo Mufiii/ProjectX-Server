@@ -42,6 +42,9 @@ class DevProfileView(APIView):
 
 
     def put(self, request, *args, **kwargs):
+        print("******************************")
+        print(request.data,'5555555555')
+        print("******************************")
         serializer = DeveloperDetailSerializer(
             request.user, data=request.data, partial=True
         )
@@ -70,12 +73,12 @@ class DevProfileView(APIView):
                     "data": serializer.data,
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
-            print("*****************************************")
-            print(user)
             user.save()
+
+            print('+++++++++++++++++++')
             serializer.save()
-            print("*****************************************")
             print(serializer.data)
+            print('+++++++++++++++++++')
             return Response(
                 {"msg": "Data Updated", "data": serializer.data},
                 status=status.HTTP_200_OK,

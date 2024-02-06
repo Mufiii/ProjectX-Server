@@ -6,15 +6,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import viewsets
-from .models import Board, Workspace , InviteToWorkspace
+from .models import Board, Workspace , List , Card
 from rest_framework.decorators import action
 from .serializers import (
     BoardListSerializer,
     BoardPostSerializer,
     WorkSpaceListSerializer,
     WorkSpacePostSerializer,
-    # WorkspaceGetInstancesSerializer,
-    InvitationSerializer
+    ListsSerializer,
+    CardsSerializer
 )
 from .utils.generate_token import generate_unique_token
 from accounts.models import User
@@ -47,7 +47,7 @@ class WorkSpaceListCreateAPiView(APIView):
 class WorkSpaceGetUpdateAPIView(APIView):
     def get(self, request, pk):
         try:
-            workspace = Workspace.objects.prefetch_related('board_set').get(pk=pk)  
+            workspace = Workspace.objects.prefetch_related('board').get(pk=pk)  
             print(workspace)                          
             serializer = WorkSpaceListSerializer(workspace)                         
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -119,15 +119,12 @@ class BoardListCreateViewset(viewsets.ModelViewSet):
 
 class BoardGetUpdateView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Board.objects.all()
-    serializer_class = BoardPostSerializer
+    serializer_class = BoardListSerializer
 
 
 
-class WorkspaceInviteViewset(viewsets.ModelViewSet):
-    queryset = InviteToWorkspace.objects.all()
-    serializer_class = InvitationSerializer
+class WorkspaceInviteViewset(APIView):
     
-    @action(detail=True, methods=['post'])
     def post(self, request, workspace_id, *args, **kwargs):
         
         user_email = request.data.get('email')
@@ -149,7 +146,6 @@ class WorkspaceInviteViewset(viewsets.ModelViewSet):
                     f"{absurl}"
                 )
                 
-                # developer = User.objects.filter(is_developer=True)
 
                 data = {
                     "email_body": email_body,
@@ -174,31 +170,48 @@ class WorkspaceInviteViewset(viewsets.ModelViewSet):
             )
 
                 
-            
 
-
-
-
-
-
-
-# class WorkspaceInviteLink()
+class ListViewset(viewsets.ModelViewSet):
+    queryset = List.objects.all()
+    serializer_class = ListsSerializer
     
-#     @action(detail=True, methods=['post'])
-#     def invite_user(self,request,pk=None):
-#         user = request.user 
-
-#         workspace = Workspace.objects.get(pk=pk)
-#         token = generate_unique_token() 
-#         print(token) 
-#         invitation = InviteToWorkspace.objects.create(workspace=workspace, user=user, token=token)
-#         print(invitation)
-#         serializer = self.get_serializer(invitation)
-#         return Response({'detail': 'User invited successfully','data':serializer.data})
-        
-        
-        
+    def create(self,request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        response_data = {
+            'message': 'List created successfully',
+            'data': serializer.data
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED)
     
     
+
+class CardViewset(viewsets.ModelViewSet):
+    queryset = Card.objects.all()
+    serializer_class = CardsSerializer
     
-        
+    def create(self, request, *args, **kwargs):
+        list_column_id = request.data.get('list_column_id')
+        if not list_column_id:
+            return Response({'error': 'list_column_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            list_instance = List.objects.get(id=list_column_id)
+        except List.DoesNotExist:
+            return Response({'error': 'List does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Modify the field name in the request data
+        request.data['list_column'] = list_column_id
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Set the list_column to the associated list
+        serializer.validated_data['list_column'] = list_instance
+        self.perform_create(serializer)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    

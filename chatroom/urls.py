@@ -1,6 +1,8 @@
-from django.urls import path
-from . import views
+from django.urls import include, path
+from .views import ListMessages
+from chatroom.routing import websocket_urlpatterns
 
 urlpatterns = [
-#     path('', views.index, name='index')
+    # path("ws/", include(websocket_urlpatterns)),
+    path('messages/',ListMessages.as_view())
 ]

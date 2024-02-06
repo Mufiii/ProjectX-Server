@@ -5,6 +5,7 @@ from django.urls import include, path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+from chatroom import routing
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -26,7 +27,9 @@ urlpatterns = [
     path("developer/", include("developer.urls")),
     path("vendor/", include("vendor.urls")),
     path("", include("monitorization.urls")),
-    # path('chat/', include('chatroom.urls')),
+    path("ws/", include(routing.websocket_urlpatterns)),
+    path('chat/', include('chatroom.urls')),
+    path('', include('invite.urls')),
     path(
         "swagger<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"
     ),

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Board, Workspace , InviteToWorkspace
+from .models import Board, Workspace , List , Card
 
 
 
@@ -13,10 +13,10 @@ class BoardChoiceSerializer(serializers.ModelSerializer):
 
 
 class WorkSpaceListSerializer(serializers.ModelSerializer):
-    boards = BoardChoiceSerializer(many=True, read_only=True,source='board_set')
+    board = BoardChoiceSerializer(many=True, read_only=True)
     class Meta:
         model = Workspace
-        fields = ["id", "name", "description",'boards']
+        fields = ["id", "name", "description",'board']
 
 
 
@@ -26,12 +26,20 @@ class WorkSpacePostSerializer(serializers.ModelSerializer):
         model = Workspace
         fields = ["id", "name", "description",'user']
 
+class ListsChoiceSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = List
+        fields = ('id','list_title',)
+
 
 class BoardListSerializer(serializers.ModelSerializer):
     workspace_id = serializers.IntegerField(write_only=True)
+    lists = ListsChoiceSerializer(many=True)
+    
     class Meta:
         model = Board
-        fields = ("id", "title", "description", "workspace_id")
+        fields = ("id", "title", "description", "workspace_id",'lists')
         
         
 class BoardPostSerializer(serializers.ModelSerializer):
@@ -40,12 +48,35 @@ class BoardPostSerializer(serializers.ModelSerializer):
         model = Board
         fields = ("id", "title", "description", "workspace_id")
         
-        
-        
-        
-class InvitationSerializer(serializers.ModelSerializer):
+
+class CardChoiceSerializer(serializers.ModelSerializer):
     
     class Meta:
-        model = InviteToWorkspace
-        fields = ['user',"workspace","token","is_accepted"]
+        model = Card
+        fields = ('id','card')
+        
+        
+class ListsSerializer(serializers.ModelSerializer):
+    cards = CardChoiceSerializer(many=True, required=False)
+    board = serializers.IntegerField(write_only=True, required=True)
 
+    class Meta:
+        model = List
+        fields = ('id', 'list_title', 'board','cards')
+        read_only_fields = ('cards',)
+
+    def validate_board(self, value):
+        try:
+            board = Board.objects.get(pk=value)
+            print(board,'22222222')
+            return board
+        except Board.DoesNotExist:
+            raise serializers.ValidationError("Invalid board_id")
+        
+        
+        
+class CardsSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Card
+        fields = ('id','card','list_column')
