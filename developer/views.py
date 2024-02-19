@@ -48,41 +48,47 @@ class DevProfileView(APIView):
         serializer = DeveloperDetailSerializer(
             request.user, data=request.data, partial=True
         )
-        if serializer.is_valid():
-            user = (
-                User.objects.filter(id=request.user.id)
-                .select_related('dev_profile')
-                .prefetch_related(
-                'dev_profile__experience_set',  
-                'dev_profile__education_set'  
+    
+        user = (
+            User.objects.filter(id=request.user.id)
+            .select_related('dev_profile')
+            .prefetch_related(
+            'dev_profile__experience_set',  
+            'dev_profile__education_set'  
+            )
+            .first()
+        )
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            return Response(e, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            if user:
+                instances = Developer.objects.filter(user=user).first()
+
+                if "profile_picture" in request.FILES:
+                    instances.profile_picture = request.FILES["profile_picture"]
+
+                if "resume" in request.FILES:
+                    instances.resume = request.FILES["resume"]
+
+                    instances.save()
+
+                    response_data = {
+                        "msg": "Profile Updated Successfully",
+                        "data": serializer.data,
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                user.save()
+
+                print('+++++++++++++++++++')
+                serializer.save()
+                print(serializer.data)
+                print('+++++++++++++++++++')
+                return Response(
+                    {"msg": "Data Updated", "data": serializer.data},
+                    status=status.HTTP_200_OK,
                 )
-                .first()
-            )
-            instances = Developer.objects.filter(user=user).first()
-
-            if "profile_picture" in request.FILES:
-                instances.profile_picture = request.FILES["profile_picture"]
-
-            if "resume" in request.FILES:
-                instances.resume = request.FILES["resume"]
-
-                instances.save()
-
-                response_data = {
-                    "msg": "Profile Updated Successfully",
-                    "data": serializer.data,
-                }
-                return Response(response_data, status=status.HTTP_200_OK)
-            user.save()
-
-            print('+++++++++++++++++++')
-            serializer.save()
-            print(serializer.data)
-            print('+++++++++++++++++++')
-            return Response(
-                {"msg": "Data Updated", "data": serializer.data},
-                status=status.HTTP_200_OK,
-            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

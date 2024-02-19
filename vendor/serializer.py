@@ -102,6 +102,13 @@ class ProjectProposalSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectProposal
         fields = ("cover_letter", "notes", "approach", "attachments", "is_apply")
+        
+        
+class ProjectProposalChoiceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProjectProposal
+        fields = ("cover_letter", "notes", "approach", "attachments")
 
 class ProjectProposalGetSerializer(serializers.ModelSerializer):
     developer = DevProfileListSerializer()
@@ -199,3 +206,12 @@ class DeveloperListSerializer(serializers.ModelSerializer):
                 )  # For example, retrieving the country's name
 
         return country
+    
+    
+class ApplicantSerializer(serializers.Serializer):
+    proposal = ProjectProposalChoiceSerializer()
+    
+    class Meta:
+        model = ProjectProposal
+        fields = ('proposal',)
+    

@@ -17,7 +17,8 @@ from .serializer import (
     SkillSerializer,
     ProjectProposalGetSerializer,
     VendorSerializer,
-    DeveloperListSerializer
+    DeveloperListSerializer,
+    ApplicantSerializer
 )
 from .tasks import send_email_task
 
@@ -27,11 +28,13 @@ class VendorProfileView(APIView):
     authentication_classes = (JWTAuthentication,)
 
     def get(self, request):
+        
         serializer = VendorSerializer(request.user)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request):
+        print(request.data,'44444')
         serializer = VendorSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
             user = User.objects.filter(id=request.user.id).first()
@@ -54,6 +57,7 @@ class VendorProfileView(APIView):
 
             user.save()
             serializer.save()
+            print(serializer.data)
 
             return Response({"data": serializer.data}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -225,3 +229,25 @@ class DeveloperListAPIView(APIView):
         developers = User.objects.filter(is_developer=True)
         serializer = DeveloperListSerializer(developers,many=True)
         return Response(serializer.data,status=status.HTTP_200_OK)
+    
+    
+class ProjectApplicantsAPIView(APIView):
+    def get(self, request,user_id):
+        Q_base = request.GET.get('q')
+        print(Q_base)
+        if Q_base:
+            try:
+                proposals = (ProjectProposal.objects
+                                .select_related('project')
+                                .get(project_id=Q_base, developer_id=user_id))
+                
+                serializer = ProjectProposalSerializer(proposals)
+                return Response(serializer.data)
+            except:
+                return Response('Project proposal not found.',
+                                status=status.HTTP_404_NOT_FOUND
+                )
+        return Response(
+            "project not found",
+            status=status.HTTP_400_BAD_REQUEST
+        )

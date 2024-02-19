@@ -33,4 +33,10 @@ urlpatterns = [
         views.DeveloperListAPIView.as_view(), 
         name="developers"
     ),
+    path(
+        "applicants/<str:user_id>/", 
+        views.ProjectApplicantsAPIView.as_view(), 
+        name="applicants"
+    ),
+
 ]

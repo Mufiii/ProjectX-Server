@@ -249,25 +249,52 @@ class DeveloperDetailSerializer(serializers.ModelSerializer):
             )
         return value
     
+    
+    # def update(self, instance, validated_data):
+    #     instance.email = validated_data.get("email", instance.email)
+    #     instance.first_name = validated_data.get("first_name", instance.first_name)
+    #     instance.last_name = validated_data.get("last_name", instance.last_name)
+    #     instance.country = validated_data.get("country", instance.country)
+
+    #     dev_profile_data = validated_data.pop("dev_profile",None)
+    #     print(dev_profile_data,'000000000000')
+    #     if dev_profile_data:
+    #         dev_profile_instance = instance.dev_profile
+    #         if not dev_profile_instance:
+    #             dev_profile_instance = Developer.objects.create(user=instance)
+    #         for attr, value in dev_profile_data.items():
+    #             setattr(dev_profile_instance, attr, value)
+    #         skills = dev_profile_data.get("skills", [])
+    #         dev_profile_instance.skills.clear()
+    #         dev_profile_instance.skills.add(*skills)
+    #         dev_profile_instance.save()
+        
+    #     instance.save()
+    #     return instance
+    
     def update(self, instance, validated_data):
         # Update User model attributes
+        print("validated_data before popping:", validated_data)
         instance.email = validated_data.get("email", instance.email)
         instance.first_name = validated_data.get("first_name", instance.first_name)
         instance.last_name = validated_data.get("last_name", instance.last_name)
         instance.country = validated_data.get("country", instance.country)
-
-        # Update DevProfile related to the User instance
+        print("yoyoooooooooo")
         dev_profile_data = validated_data.pop("dev_profile", None)
+        print("dev_profile_data:", dev_profile_data)  # Print dev_profile_data after popping
+        print("validated_data after popping:", validated_data) 
         if dev_profile_data:
-            print(dev_profile_data["skills"])
-            dev_profile_instance = (
-                instance.dev_profile
-            )  # Get the related DevProfile instance
+            # Convert OrderedDict to dictionary
+            dev_profile_data = dict(dev_profile_data)
+            print("dev_profile_data:", dev_profile_data)  # Print the entire dev_profile_data dictionary
+            for key, value in dev_profile_data.items():
+                print(f"Key: {key}, Value: {value}")  # Print each key-value pair in dev_profile_data
+            dev_profile_instance = instance.dev_profile
             for attr, value in dev_profile_data.items():
                 if attr != "skills":
                     setattr(dev_profile_instance, attr, value)
             skills = dev_profile_data.get("skills", {})
-            print(skills)
+            print("Skills:", skills)  # Print the skills list
             if skills:
                 dev_profile_instance.skills.clear()
                 dev_profile_instance.skills.add(*skills)

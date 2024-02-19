@@ -2,6 +2,8 @@ from rest_framework import serializers
 from .models import Invitation
 from accounts.models import User
 from vendor. models import Project
+from accounts.serializer import UserSerializer
+from developer.serializers import DevProfileListSerializer
 
 class InvitationSerializer(serializers.Serializer):
     project = serializers.IntegerField()
@@ -24,3 +26,18 @@ class InvitationSerializer(serializers.Serializer):
         )
         
         return invite
+      
+      
+
+class HireDeveloperSerializer(serializers.Serializer):
+    developer_id = serializers.IntegerField()
+    
+    
+
+      
+class DeveloperHireListSerializer(serializers.ModelSerializer):
+    applicant = DevProfileListSerializer(many=True, source='applicants')
+    class Meta:
+      model = Project 
+      fields = ('applicant',)
+      

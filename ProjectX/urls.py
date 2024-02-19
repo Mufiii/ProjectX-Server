@@ -28,8 +28,8 @@ urlpatterns = [
     path("vendor/", include("vendor.urls")),
     path("", include("monitorization.urls")),
     path("ws/", include(routing.websocket_urlpatterns)),
-    path('chat/', include('chatroom.urls')),
     path('', include('invite.urls')),
+    path('chat/', include('chatroom.api.urls')),
     path(
         "swagger<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"
     ),
