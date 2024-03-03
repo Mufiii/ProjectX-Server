@@ -15,7 +15,7 @@ from rest_framework import generics, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from datetime import datetime, timedelta
 from .models import *
 from .serializer import DeveloperSerializer, UserLoginSerializer, VendorSerializer
 from .utils.smtp import send_mail
@@ -239,3 +239,30 @@ class LoginOtpverification(APIView):
                 status=status.HTTP_200_OK,
             )
         return Response({"msg": "invalid otp"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class ResendOTPAPIview(APIView):
+    def post(self, request):
+        email = request.data.get('email')  
+        if email:
+            try:
+                user = User.objects.get(email=email)
+                otp = math.floor(random.randint(100000, 999999))
+                user.otp = otp
+                # user.otp_expiry = timezone.now() + timedelta(minutes=1)
+                user.save()
+                subject = "Otp Verification"
+                message = f"Your New verification otp is {otp}"
+                email_from = settings.EMAIL_HOST_USER
+                recipient_email = [email]
+                send_mail(subject, message, email_from, recipient_email)
+                response_data = {"email": email, "otp": otp}
+                return Response(response_data, status=status.HTTP_200_OK)
+            except User.DoesNotExist:
+                return Response("Email not found", status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                return Response({"msg": f"Error: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response("Email not provided", status=status.HTTP_400_BAD_REQUEST)
+             

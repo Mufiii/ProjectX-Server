@@ -2,7 +2,7 @@ from django.urls import re_path
 from chatroom.consumers import ChatConsumer
 from channels.routing import URLRouter
 
-
+# This file defines the routing configuration for handling WebSocket connections.
 
 
 websocket_urlpatterns = [

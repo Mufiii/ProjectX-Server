@@ -5,7 +5,9 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from django.shortcuts import get_object_or_404
 from chatroom.models import ChatMessage,ChatRoom ,OnlineUser
 from accounts.models import User
+import logging
 
+logger = logging.getLogger(__name__)
 
 class ChatConsumer(AsyncWebsocketConsumer):
     
@@ -41,6 +43,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'user':'userId',
                 'roomId': roomId,
                 'message': message,
+                'userImage': userObj.image.url,
                 'username':  userObj.username ,
                 'timestamp': str(chatMessageObj.timestamp)
             }
@@ -57,13 +60,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }
             }
             await self.channel_layer.group_send('onlineUser', chatMessage)
-
             
         # connect    
         async def connect(self):
+            print("********")
+            print("websocket connected")
             print(self.scope)
+            print("********")
             self.userId = self.scope['url_route']['kwargs']['userId']
-            print(self.userId,'222')
+            print(self.userId,"2222222222")
             self.userRooms = await database_sync_to_async(
                 list
             )(ChatRoom.objects.filter(member=self.userId))
@@ -72,15 +77,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     room.roomId,
                     self.channel_name
                 )
-            await self.channel_layer.group_add('onlineUser', self.channel_name)
-            self.user = await database_sync_to_async(self.getUser)(self.userId)
-            await database_sync_to_async(self.addOnlineUser)(self.user)
-            await self.sendOnlineUserList()
             await self.accept()
+            # await self.channel_layer.group_add('onlineUser', self.channel_name)
+            # self.user = await database_sync_to_async(self.getUser)(self.userId)
+            # await database_sync_to_async(self.addOnlineUser)(self.user)
+            # await self.sendOnlineUserList()
             
             
         # disconnect    
         async def disconnect(self,close_code):
+            print("websocket disconnected")
             await database_sync_to_async(self.deleteOnlineUser)(self.user)
             await self.sendOnlineUserList()
             for room in self.userRooms:
@@ -93,30 +99,36 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 
         # recieve
         async def recieve(self,text_data):
-            text_data_json = json.loads(text_data)
-            action = text_data_json['action']
-            roomId = text_data_json['roomId']
-            chatMessage = {}
-            if action == 'message':
-                message = text_data_json['message']
-                userId = text_data_json['user']
-                chatMessage = await database_sync_to_async(
-                    self.saveMessage
-                )(message, userId, roomId)
-            elif action == 'typing':
-                chatMessage = text_data_json
-            await self.channel_layer.group_send(
-                roomId,
-                {
-                    'type': 'chat_message',
-                    'message': chatMessage
-                }
-            )
-        
+            logger.debug("Received WebSocket message: %s", text_data)
+            try:
+                text_data_json = json.loads(text_data)
+                action = text_data_json['action']
+                roomId = text_data_json['roomId']
+                chatMessage = {}
+                if action == 'message':
+                    message = text_data_json['message']
+                    userId = text_data_json['user']
+                    chatMessage = await self.save_message(message, userId, roomId)
+                elif action == 'typing':
+                    chatMessage = text_data_json
+                    
+                logger.debug("Processed message: %s", chatMessage)
+                
+                await self.channel_layer.group_send(
+                    roomId,
+                    {
+                        'type': 'chat_message',
+                        'message': chatMessage
+                    }
+                )
+            except Exception as e:
+                logger.error("Error processing message: %s", e)
             
 
         async def chat_message(self, event):
+            print(event,'9999999')
             message = event['message']
+            print(message,"pppppp")
             await self.send(text_data=json.dumps(message))
             
             

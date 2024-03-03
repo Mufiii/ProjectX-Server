@@ -9,4 +9,5 @@ urlpatterns = [
     path("email_verify/", views.VerifyEmail.as_view(), name="email_verify"),
     path("login/", views.UserLoginRequestAPIView.as_view(), name="login"),
     path("otpverify/", views.LoginOtpverification.as_view(), name="loginotp"),
+    path("resendotp/", views.ResendOTPAPIview.as_view(), name="resendotp"),
 ]
